@@ -274,7 +274,6 @@ export default function Team() {
           <svg style={{ position:'absolute',inset:0,width:'100%',height:'100%',pointerEvents:'none',zIndex:1 }}>
             {positions.map((pos, i) => {
               if (i === active) return null;
-              const ax = positions[active].x, ay = positions[active].y;
               return (
                 <line key={i} x1={SCENE_W/2} y1={SCENE_H/2} x2={pos.x} y2={pos.y}
                   stroke={getAccent(i)} strokeWidth="1" strokeDasharray="4 5" opacity="0.25"
