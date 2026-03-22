@@ -95,7 +95,7 @@ export default function Reviews() {
                     </div>
                     <div>
                       <div className="font-grotesk font-bold text-xs" style={{ color: 'var(--text)' }}>{r.name}</div>
-                      <div className="text-[9px]" style={{ color: 'var(--text3)' }}>{fmt(r.date)}</div>
+                      {/* <div className="text-[9px]" style={{ color: 'var(--text3)' }}>{fmt(r.date)}</div> */}
                     </div>
                   </div>
                 </div>
