@@ -1,6 +1,6 @@
-import { Star, ArrowLeft, Send, User, Phone, Briefcase } from 'lucide-react';
+import { Star, ArrowLeft } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { collection, addDoc, query, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase';
 
@@ -56,8 +56,6 @@ export default function ReviewsPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [filter, setFilter]   = useState<string>('All');
   const [sort, setSort]       = useState<'newest'|'oldest'|'1star'|'2star'|'3star'|'4star'|'5star'>('newest');
-  const [form, setForm]       = useState({ name:'', mobile:'', category:[] as string[], rating:5, comment:'' });
-  const [sent, setSent]       = useState(false);
 
   useEffect(() => {
     return onSnapshot(query(collection(db,'reviews'), orderBy('date','desc')), snap => {
@@ -66,16 +64,6 @@ export default function ReviewsPage() {
   }, []);
 
   useEffect(() => { window.scrollTo(0,0); }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await addDoc(collection(db,'reviews'), { ...form, date: Timestamp.now() });
-      setSent(true);
-      setForm({ name:'', mobile:'', category:[], rating:5, comment:'' });
-      setTimeout(() => setSent(false), 3000);
-    } catch(err) { console.error(err); }
-  };
 
   /* filter + sort */
   const allCats = ['All', ...Array.from(new Set(reviews.flatMap(r => Array.isArray(r.category) ? r.category : [r.category]).filter(Boolean)))];
@@ -87,11 +75,6 @@ export default function ReviewsPage() {
   }
 
   const avgRating = reviews.length ? (reviews.reduce((s,r) => s + (r.rating||0), 0) / reviews.length).toFixed(1) : null;
-
-  const input  = "w-full px-3.5 py-3 rounded-xl text-sm outline-none transition-all duration-300";
-  const ist    = { background:'var(--bg)', border:'1px solid var(--border)', color:'var(--text)' };
-  const iFocus = (e: React.FocusEvent<any>) => { e.target.style.borderColor='var(--orange)'; e.target.style.boxShadow='0 0 0 3px rgba(249,115,22,0.12)'; };
-  const iBlur  = (e: React.FocusEvent<any>) => { e.target.style.borderColor='var(--border)'; e.target.style.boxShadow='none'; };
 
   return (
     <div className="min-h-screen pt-20 pb-20 px-5 lg:px-10" style={{ background:'var(--bg)' }}>
@@ -182,72 +165,6 @@ export default function ReviewsPage() {
           </div>
         )}
 
-        {/* Review form */}
-        <div className="max-w-xl mx-auto p-8 rounded-2xl" style={{ background:'var(--bg2)', border:'1px solid var(--border)' }}>
-          <h3 className="font-grotesk font-bold text-xl mb-1" style={{ color:'var(--text)' }}>Write a Review</h3>
-          <p className="text-xs mb-7" style={{ color:'var(--text3)' }}>Share your experience with us.</p>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[9px] font-bold tracking-[2px] mb-1.5" style={{ color:'var(--orange)' }}>NAME</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color:'var(--text3)' }}/>
-                  <input type="text" required placeholder="Your name" value={form.name}
-                    onChange={e=>setForm({...form,name:e.target.value})}
-                    className={`${input} pl-9`} style={ist} onFocus={iFocus} onBlur={iBlur}/>
-                </div>
-              </div>
-              <div>
-                <label className="block text-[9px] font-bold tracking-[2px] mb-1.5" style={{ color:'var(--orange)' }}>MOBILE</label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color:'var(--text3)' }}/>
-                  <input type="tel" required placeholder="+91 XXXXX XXXXX" value={form.mobile}
-                    onChange={e=>setForm({...form,mobile:e.target.value})}
-                    className={`${input} pl-9`} style={ist} onFocus={iFocus} onBlur={iBlur}/>
-                </div>
-              </div>
-            </div>
-            <div>
-              <label className="block text-[9px] font-bold tracking-[2px] mb-1.5" style={{ color:'var(--orange)' }}>PROJECT CATEGORY</label>
-              <div className="p-3 rounded-xl" style={{ background:'var(--bg)', border:'1px solid var(--border)' }}>
-                <div className="relative pl-6">
-                  <Briefcase className="absolute left-0 top-0.5 w-3.5 h-3.5" style={{ color:'var(--text3)' }}/>
-                  <div className="grid grid-cols-2 gap-2">
-                    {CATS.map(cat=>(
-                      <label key={cat} className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={form.category.includes(cat)}
-                          onChange={()=>{const cats=form.category.includes(cat)?form.category.filter(c=>c!==cat):[...form.category,cat];setForm({...form,category:cats});}}
-                          className="w-3.5 h-3.5 rounded cursor-pointer accent-orange-500"/>
-                        <span className="text-[11px]" style={{ color:'var(--text2)' }}>{cat}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div>
-              <label className="block text-[9px] font-bold tracking-[2px] mb-1.5" style={{ color:'var(--orange)' }}>RATING</label>
-              <div className="flex gap-1.5">
-                {[1,2,3,4,5].map(s=>(
-                  <button key={s} type="button" onClick={()=>setForm({...form,rating:s})} className="transition-transform duration-150 hover:scale-125">
-                    <Star className="w-7 h-7" fill={s<=form.rating?'#f97316':'transparent'} stroke={s<=form.rating?'#f97316':'#d1d5db'}/>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="block text-[9px] font-bold tracking-[2px] mb-1.5" style={{ color:'var(--orange)' }}>YOUR REVIEW</label>
-              <textarea required rows={3} placeholder="Tell us about your experience..." value={form.comment}
-                onChange={e=>setForm({...form,comment:e.target.value})}
-                className={`${input} resize-none`} style={ist} onFocus={iFocus} onBlur={iBlur}/>
-            </div>
-            <button type="submit"
-              className="w-full py-3.5 rounded-xl text-white text-sm font-bold tracking-wide flex items-center justify-center gap-2 transition-all duration-300 hover:-translate-y-0.5"
-              style={{ background:sent?'linear-gradient(135deg,#22c55e,#16a34a)':'linear-gradient(135deg,var(--orange),var(--orange2))', boxShadow:'0 6px 20px rgba(249,115,22,0.25)' }}>
-              {sent?'✓ REVIEW SUBMITTED!':<><span>SUBMIT REVIEW</span><Send className="w-4 h-4"/></>}
-            </button>
-          </form>
-        </div>
       </div>
     </div>
   );
