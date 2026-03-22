@@ -6,6 +6,64 @@ import { db } from '../firebase';
 
 const SHOW_INITIAL = 4; // cards shown before "show more"
 
+/* ── Expandable Review Card ── */
+function ReviewCard({ review: r }: { review: any }) {
+  const [expanded, setExpanded] = useState(false);
+  const LIMIT = 120; // chars before truncate
+  const isLong = r.comment && r.comment.length > LIMIT;
+
+  return (
+    <div className="flex flex-col p-5 rounded-2xl border card-hover"
+      style={{ background: 'var(--bg2)', borderColor: 'var(--border)', minHeight: 200 }}>
+
+      {/* Stars */}
+      <div className="flex gap-0.5 mb-3 flex-shrink-0">
+        {[...Array(5)].map((_, j) => (
+          <Star key={j} className="w-3.5 h-3.5"
+            fill={j < r.rating ? '#f97316' : 'transparent'}
+            stroke={j < r.rating ? '#f97316' : '#d1d5db'} />
+        ))}
+      </div>
+
+      {/* Comment */}
+      <div className="flex-1 mb-2">
+        <p className="text-xs leading-relaxed italic" style={{ color: 'var(--text2)' }}>
+          "{expanded || !isLong ? r.comment : r.comment.slice(0, LIMIT) + '...'}"
+        </p>
+        {isLong && (
+          <button
+            onClick={() => setExpanded(v => !v)}
+            className="text-[10px] font-bold mt-1.5 transition-opacity hover:opacity-70"
+            style={{ color: 'var(--orange)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            {expanded ? '↑ Show Less' : '↓ Show More'}
+          </button>
+        )}
+      </div>
+
+      {/* Categories */}
+      {r.category && (
+        <div className="flex flex-wrap gap-1 mb-3 flex-shrink-0">
+          {(Array.isArray(r.category) ? r.category : [r.category]).map((c: string, ci: number) => (
+            <span key={ci} className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide"
+              style={{ background: 'var(--orange3)', color: 'var(--orange)' }}>{c}</span>
+          ))}
+        </div>
+      )}
+
+      {/* Author */}
+      <div className="flex items-center gap-2.5 flex-shrink-0 pt-3 mt-auto"
+        style={{ borderTop: '1px solid var(--border)' }}>
+        <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
+          style={{ background: 'linear-gradient(135deg,var(--orange),var(--orange2))' }}>
+          {r.name?.[0] || '?'}
+        </div>
+        <div className="font-grotesk font-bold text-xs" style={{ color: 'var(--text)' }}>{r.name}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function Reviews() {
   const [form, setForm]       = useState({ name: '', mobile: '', category: [] as string[], rating: 5, comment: '' });
   const [reviews, setReviews] = useState<any[]>([]);
@@ -96,45 +154,7 @@ export default function Reviews() {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 reveal">
                 {visibleReviews.map((r, i) => (
-                  <div key={i}
-                    className="flex flex-col p-5 rounded-2xl border card-hover cursor-default"
-                    style={{ background: 'var(--bg2)', borderColor: 'var(--border)', minHeight: 220 }}>
-
-                    {/* Stars */}
-                    <div className="flex gap-0.5 mb-3 flex-shrink-0">
-                      {[...Array(5)].map((_, j) => (
-                        <Star key={j} className="w-3.5 h-3.5"
-                          fill={j < r.rating ? '#f97316' : 'transparent'}
-                          stroke={j < r.rating ? '#f97316' : '#d1d5db'} />
-                      ))}
-                    </div>
-
-                    {/* Comment — grows to fill */}
-                    <p className="text-xs leading-relaxed italic flex-1 mb-3"
-                      style={{ color: 'var(--text2)', display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      "{r.comment}"
-                    </p>
-
-                    {/* Categories */}
-                    {r.category && (
-                      <div className="flex flex-wrap gap-1 mb-3 flex-shrink-0">
-                        {(Array.isArray(r.category) ? r.category : [r.category]).map((c: string, ci: number) => (
-                          <span key={ci} className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide"
-                            style={{ background: 'var(--orange3)', color: 'var(--orange)' }}>{c}</span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Author — always at bottom */}
-                    <div className="flex items-center gap-2.5 flex-shrink-0 pt-3 mt-auto"
-                      style={{ borderTop: '1px solid var(--border)' }}>
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
-                        style={{ background: 'linear-gradient(135deg,var(--orange),var(--orange2))' }}>
-                        {r.name?.[0] || '?'}
-                      </div>
-                      <div className="font-grotesk font-bold text-xs" style={{ color: 'var(--text)' }}>{r.name}</div>
-                    </div>
-                  </div>
+                  <ReviewCard key={i} review={r} />
                 ))}
               </div>
 
