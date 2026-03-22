@@ -4,17 +4,16 @@ import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 
 import { Link } from 'react-router-dom';
+import Services from './Services';
 
 const SERVICES = ['Hardware Dev', 'Website Dev', 'App Dev', '3D Design', '3D Printing', 'Documentation', 'Patent Docs', 'Poster Design', 'Training'];
 
-/* ── Video background ── */
+/* ── GIF background ── */
 function VideoBg() {
   return (
-    <video
-      autoPlay
-      loop
-      muted
-      playsInline
+    <img
+      src="/assets/BG.gif"
+      alt=""
       style={{
         position: 'absolute',
         inset: 0,
@@ -25,9 +24,7 @@ function VideoBg() {
         zIndex: 0,
         opacity: 0.18,
       }}
-    >
-      <source src="/assets/BG.mp4" type="video/mp4" />
-    </video>
+    />
   );
 }
 
@@ -144,7 +141,7 @@ export default function Hero() {
               }}
             >
               <Play className="w-3.5 h-3.5" style={{ fill: 'var(--orange)', color: 'var(--orange)' }} />
-              WATCH DEMO
+              Explore Services
             </Link>
           </div>
 
@@ -280,7 +277,7 @@ export default function Hero() {
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full" style={{ background: '#22c55e' }} />
-              <span className="text-[9px] font-bold" style={{ color: 'var(--text3)' }}>INDIA-WIDE</span>
+              <span className="text-[9px] font-bold" style={{ color: 'var(--text3)' }}>WORLDWIDE</span>
             </div>
           </div>
         </div>

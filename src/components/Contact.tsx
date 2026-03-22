@@ -113,7 +113,7 @@ export default function Contact() {
             {[
               { icon: Mail,   label: 'EMAIL US',  val: 'office.starkinnovationz@gmail.com' },
               { icon: Phone,  label: 'CALL US',   val: '+91 94428 79062 / +91 94860 43621' },
-              { icon: MapPin, label: 'LOCATION',  val: 'India — Serving Nationwide' },
+              { icon: MapPin, label: 'LOCATION',  val: 'INDIA' },
             ].map(info => {
               const Icon = info.icon;
               return (
@@ -141,8 +141,6 @@ export default function Contact() {
               <div className="flex flex-col gap-3">
                 {[
                   { icon: Clock,  text: 'Sunday to Saturday: 24/7 Services' },
-                  { icon: Wrench, text: 'On-site troubleshooting available' },
-                  { icon: Truck,  text: 'Doorstep product delivery' },
                 ].map(item => {
                   const Icon = item.icon;
                   return (
@@ -168,8 +166,8 @@ export default function Contact() {
 
               {/* Name, Email, Phone */}
               {[
-                { label: 'YOUR NAME',    type: 'text',  ph: 'John Doe',        key: 'name' },
-                { label: 'EMAIL',        type: 'email', ph: 'john@example.com', key: 'email' },
+                { label: 'YOUR NAME',    type: 'text',  ph: 'Stark InnovationZ', key: 'name' },
+                { label: 'EMAIL',        type: 'email', ph: 'office.starkinnovationz@gmail.com', key: 'email' },
                 { label: 'PHONE NUMBER', type: 'tel',   ph: '+91 XXXXX XXXXX',  key: 'phone' },
               ].map(f => (
                 <div key={f.key}>
