@@ -1,18 +1,14 @@
-import { Star, ArrowLeft, Send, User, Phone, Briefcase } from 'lucide-react';
+import { Star, ArrowLeft} from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { collection, addDoc, query, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase';
-
-const CATS = ['Hardware','Website Development','App Development','3D Design','3D Printing','Documentation','Patent Documentation','Poster Design','Hands-on Training','Education & Training','Other'];
 
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [filter, setFilter]   = useState<string>('All');
   const [sort, setSort]       = useState<'newest'|'highest'|'lowest'>('newest');
-  const [form, setForm]       = useState({ name:'', mobile:'', category:[] as string[], rating:5, comment:'' });
-  const [sent, setSent]       = useState(false);
-
+ 
   useEffect(() => {
     return onSnapshot(query(collection(db,'reviews'), orderBy('date','desc')), snap => {
       setReviews(snap.docs.map(d => ({ id:d.id, ...d.data() })));
@@ -21,15 +17,6 @@ export default function ReviewsPage() {
 
   useEffect(() => { window.scrollTo(0,0); }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await addDoc(collection(db,'reviews'), { ...form, date: Timestamp.now() });
-      setSent(true);
-      setForm({ name:'', mobile:'', category:[], rating:5, comment:'' });
-      setTimeout(() => setSent(false), 3000);
-    } catch(err) { console.error(err); }
-  };
 
   /* filter + sort */
   const allCats = ['All', ...Array.from(new Set(reviews.flatMap(r => Array.isArray(r.category) ? r.category : [r.category]).filter(Boolean)))];
@@ -38,11 +25,6 @@ export default function ReviewsPage() {
   if (sort === 'lowest')  filtered = [...filtered].sort((a,b) => a.rating - b.rating);
 
   const avgRating = reviews.length ? (reviews.reduce((s,r) => s + (r.rating||0), 0) / reviews.length).toFixed(1) : null;
-
-  const input  = "w-full px-3.5 py-3 rounded-xl text-sm outline-none transition-all duration-300";
-  const ist    = { background:'var(--bg)', border:'1px solid var(--border)', color:'var(--text)' };
-  const iFocus = (e: React.FocusEvent<any>) => { e.target.style.borderColor='var(--orange)'; e.target.style.boxShadow='0 0 0 3px rgba(249,115,22,0.12)'; };
-  const iBlur  = (e: React.FocusEvent<any>) => { e.target.style.borderColor='var(--border)'; e.target.style.boxShadow='none'; };
 
   return (
     <div className="min-h-screen pt-20 pb-20 px-5 lg:px-10" style={{ background:'var(--bg)' }}>
