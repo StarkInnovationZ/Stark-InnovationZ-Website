@@ -1,12 +1,16 @@
-import { Star, Send, User, Phone, Briefcase } from 'lucide-react';
+import { Star, Send, User, Phone, Briefcase, ArrowRight } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { collection, addDoc, query, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
+import { Link } from 'react-router-dom';
 import { db } from '../firebase';
 
+const SHOW_INITIAL = 4; // cards shown before "show more"
+
 export default function Reviews() {
-  const [form, setForm] = useState({ name: '', mobile: '', category: [] as string[], rating: 5, comment: '' });
+  const [form, setForm]       = useState({ name: '', mobile: '', category: [] as string[], rating: 5, comment: '' });
   const [reviews, setReviews] = useState<any[]>([]);
-  const [sent, setSent] = useState(false);
+  const [sent, setSent]       = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -16,7 +20,10 @@ export default function Reviews() {
   }, []);
 
   useEffect(() => {
-    const obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }), { threshold: 0.07 });
+    const obs = new IntersectionObserver(
+      es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: 0.07 }
+    );
     ref.current?.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     return () => obs.disconnect();
   }, [reviews]);
@@ -31,12 +38,12 @@ export default function Reviews() {
     } catch (err) { console.error(err); }
   };
 
-  const fmt = (ts: any) => ts?.seconds ? new Date(ts.seconds * 1000).toLocaleDateString() : '';
+  const input   = "w-full px-3.5 py-3 rounded-xl text-sm outline-none transition-all duration-300";
+  const istyle  = { background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' };
+  const iFocus  = (e: React.FocusEvent<any>) => { e.target.style.borderColor='var(--orange)'; e.target.style.boxShadow='0 0 0 3px rgba(249,115,22,0.12)'; };
+  const iBlur   = (e: React.FocusEvent<any>) => { e.target.style.borderColor='var(--border)'; e.target.style.boxShadow='none'; };
 
-  const input = "w-full px-3.5 py-3 rounded-xl text-sm outline-none transition-all duration-300";
-  const istyle = { background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' };
-  const iFocus = (e: React.FocusEvent<any>) => { e.target.style.borderColor = 'var(--orange)'; e.target.style.boxShadow = '0 0 0 3px rgba(249,115,22,0.12)'; };
-  const iBlur  = (e: React.FocusEvent<any>) => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none'; };
+  const visibleReviews = showAll ? reviews : reviews.slice(0, SHOW_INITIAL);
 
   return (
     <section ref={ref} style={{ background: 'var(--bg)' }}>
@@ -56,51 +63,107 @@ export default function Reviews() {
       <div className="py-20 px-5 lg:px-10">
         <div className="max-w-7xl mx-auto">
 
-          {/* Header */}
-          <div className="max-w-xl mb-14 reveal">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-[2px] mb-4"
-              style={{ background: 'var(--orange3)', color: 'var(--orange)', border: '1px solid var(--orange4)' }}>
-              ◆ TESTIMONIALS
+          {/* Header row */}
+          <div className="flex items-end justify-between mb-14 reveal">
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-[2px] mb-4"
+                style={{ background: 'var(--orange3)', color: 'var(--orange)', border: '1px solid var(--orange4)' }}>
+                ◆ TESTIMONIALS
+              </div>
+              <h2 className="font-grotesk font-bold tracking-tight mb-3"
+                style={{ fontSize: 'clamp(32px,4vw,52px)', color: 'var(--text)', lineHeight: 1.1 }}>
+                Real clients,<br /><span style={{ color: 'var(--orange)' }}>real results.</span>
+              </h2>
             </div>
-            <h2 className="font-grotesk font-bold tracking-tight mb-3"
-              style={{ fontSize: 'clamp(32px,4vw,52px)', color: 'var(--text)', lineHeight: 1.1 }}>
-              Real clients,<br /><span style={{ color: 'var(--orange)' }}>real results.</span>
-            </h2>
+
+            {/* More Reviews button */}
+            <Link to="/reviews"
+              className="hidden sm:inline-flex items-center gap-2 font-bold text-sm transition-all duration-200 hover:-translate-y-0.5 flex-shrink-0"
+              style={{
+                padding: '10px 20px', borderRadius: 10,
+                background: 'var(--orange3)', color: 'var(--orange)',
+                border: '1px solid var(--orange4)',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background='var(--orange)'; (e.currentTarget as HTMLAnchorElement).style.color='#fff'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background='var(--orange3)'; (e.currentTarget as HTMLAnchorElement).style.color='var(--orange)'; }}
+            >
+              More Reviews <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
 
-          {/* Reviews scroll */}
+          {/* Review cards — equal height grid */}
           {reviews.length > 0 ? (
-            <div className="flex gap-4 overflow-x-auto pb-4 reveal" style={{ scrollbarWidth: 'none' }}>
-              {reviews.map((r, i) => (
-                <div key={i} className="flex-none w-72 p-5 rounded-2xl border card-hover cursor-default"
-                  style={{ background: 'var(--bg2)', borderColor: 'var(--border)' }}>
-                  <div className="flex gap-0.5 mb-4">
-                    {[...Array(5)].map((_, j) => (
-                      <Star key={j} className="w-3.5 h-3.5" fill={j < r.rating ? '#f97316' : 'transparent'} stroke={j < r.rating ? '#f97316' : '#d1d5db'} />
-                    ))}
-                  </div>
-                  <p className="text-xs leading-relaxed italic mb-4" style={{ color: 'var(--text2)' }}>"{r.comment}"</p>
-                  {r.category && (
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {(Array.isArray(r.category) ? r.category : [r.category]).map((c: string, ci: number) => (
-                        <span key={ci} className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide"
-                          style={{ background: 'var(--orange3)', color: 'var(--orange)' }}>{c}</span>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 reveal">
+                {visibleReviews.map((r, i) => (
+                  <div key={i}
+                    className="flex flex-col p-5 rounded-2xl border card-hover cursor-default"
+                    style={{ background: 'var(--bg2)', borderColor: 'var(--border)', minHeight: 220 }}>
+
+                    {/* Stars */}
+                    <div className="flex gap-0.5 mb-3 flex-shrink-0">
+                      {[...Array(5)].map((_, j) => (
+                        <Star key={j} className="w-3.5 h-3.5"
+                          fill={j < r.rating ? '#f97316' : 'transparent'}
+                          stroke={j < r.rating ? '#f97316' : '#d1d5db'} />
                       ))}
                     </div>
-                  )}
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs"
-                      style={{ background: 'linear-gradient(135deg,var(--orange),var(--orange2))' }}>
-                      {r.name[0]}
-                    </div>
-                    <div>
+
+                    {/* Comment — grows to fill */}
+                    <p className="text-xs leading-relaxed italic flex-1 mb-3"
+                      style={{ color: 'var(--text2)', display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      "{r.comment}"
+                    </p>
+
+                    {/* Categories */}
+                    {r.category && (
+                      <div className="flex flex-wrap gap-1 mb-3 flex-shrink-0">
+                        {(Array.isArray(r.category) ? r.category : [r.category]).map((c: string, ci: number) => (
+                          <span key={ci} className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide"
+                            style={{ background: 'var(--orange3)', color: 'var(--orange)' }}>{c}</span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Author — always at bottom */}
+                    <div className="flex items-center gap-2.5 flex-shrink-0 pt-3 mt-auto"
+                      style={{ borderTop: '1px solid var(--border)' }}>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
+                        style={{ background: 'linear-gradient(135deg,var(--orange),var(--orange2))' }}>
+                        {r.name?.[0] || '?'}
+                      </div>
                       <div className="font-grotesk font-bold text-xs" style={{ color: 'var(--text)' }}>{r.name}</div>
-                      {/* <div className="text-[9px]" style={{ color: 'var(--text3)' }}>{fmt(r.date)}</div> */}
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+
+              {/* Show More / Less + More Reviews link (mobile) */}
+              <div className="flex items-center justify-center gap-4 mt-8 reveal">
+                {reviews.length > SHOW_INITIAL && (
+                  <button
+                    onClick={() => setShowAll(v => !v)}
+                    className="inline-flex items-center gap-2 font-bold text-sm transition-all duration-200 hover:-translate-y-0.5"
+                    style={{
+                      padding: '10px 24px', borderRadius: 10,
+                      background: 'var(--bg2)', color: 'var(--text)',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    {showAll ? '↑ Show Less' : `Show More (${reviews.length - SHOW_INITIAL} more)`}
+                  </button>
+                )}
+                <Link to="/reviews"
+                  className="sm:hidden inline-flex items-center gap-2 font-bold text-sm"
+                  style={{
+                    padding: '10px 20px', borderRadius: 10,
+                    background: 'var(--orange3)', color: 'var(--orange)',
+                    border: '1px solid var(--orange4)',
+                  }}>
+                  All Reviews <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </>
           ) : (
             <div className="text-center py-12 rounded-2xl reveal" style={{ background: 'var(--bg2)', border: '1px solid var(--border)' }}>
               <div className="text-4xl mb-3">💬</div>
@@ -137,7 +200,6 @@ export default function Reviews() {
                 </div>
               </div>
 
-              {/* Categories */}
               <div>
                 <label className="block text-[9px] font-bold tracking-[2px] mb-1.5" style={{ color: 'var(--orange)' }}>PROJECT CATEGORY</label>
                 <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
@@ -160,7 +222,6 @@ export default function Reviews() {
                 </div>
               </div>
 
-              {/* Rating */}
               <div>
                 <label className="block text-[9px] font-bold tracking-[2px] mb-1.5" style={{ color: 'var(--orange)' }}>RATING</label>
                 <div className="flex gap-1.5">
@@ -173,7 +234,6 @@ export default function Reviews() {
                 </div>
               </div>
 
-              {/* Comment */}
               <div>
                 <label className="block text-[9px] font-bold tracking-[2px] mb-1.5" style={{ color: 'var(--orange)' }}>YOUR REVIEW</label>
                 <textarea required rows={3} placeholder="Tell us about your experience..." value={form.comment}
