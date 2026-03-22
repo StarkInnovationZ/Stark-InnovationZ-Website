@@ -23,7 +23,7 @@ function VideoBg() {
         objectFit: 'cover',
         pointerEvents: 'none',
         zIndex: 0,
-        opacity: 0.05,
+        opacity: 0.18,
       }}
     >
       <source src="/assets/BG.mp4" type="video/mp4" />
@@ -35,11 +35,18 @@ function VideoBg() {
 export default function Hero() {
   const countRef = useRef<HTMLDivElement>(null);
   const [reviewCount, setReviewCount] = useState(0);
+  const [avgRating, setAvgRating]     = useState<number | null>(null);
 
-  /* live review count */
+  /* live review count + average rating */
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'reviews'), snap => {
       setReviewCount(snap.size);
+      if (snap.size === 0) { setAvgRating(null); return; }
+      const total = snap.docs.reduce((sum, d) => {
+        const r = d.data().rating;
+        return sum + (typeof r === 'number' ? r : 0);
+      }, 0);
+      setAvgRating(Math.round((total / snap.size) * 10) / 10);
     });
     return () => unsub();
   }, []);
@@ -137,7 +144,7 @@ export default function Hero() {
               }}
             >
               <Play className="w-3.5 h-3.5" style={{ fill: 'var(--orange)', color: 'var(--orange)' }} />
-              Explore Services
+              WATCH DEMO
             </Link>
           </div>
 
@@ -236,18 +243,27 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Float card bottom-right */}
+          {/* Float card bottom-right — LIVE rating */}
           <div
             className="absolute bottom-0 right-0 w-48 rounded-2xl p-4 shadow-card float-b"
             style={{ background: 'var(--bg2)', border: '1px solid var(--border)' }}
           >
-            <div className="text-[9px] font-bold tracking-[1.5px] mb-3" style={{ color: 'var(--text3)' }}>CLIENT RATING</div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-[9px] font-bold tracking-[1.5px]" style={{ color: 'var(--text3)' }}>CLIENT RATING</div>
+              {/* live indicator */}
+              <span className="flex items-center gap-1 text-[8px] font-bold" style={{ color: '#22c55e' }}>
+                <span style={{ width:5,height:5,borderRadius:'50%',background:'#22c55e',display:'inline-block',animation:'ping-dot 2s cubic-bezier(0,0,.2,1) infinite' }}/>
+                LIVE
+              </span>
+            </div>
             <div className="flex items-end gap-1 mb-2">
-              <span className="font-grotesk font-bold text-3xl leading-none" style={{ color: 'var(--text)' }}>4.9</span>
+              <span className="font-grotesk font-bold text-3xl leading-none" style={{ color: 'var(--text)' }}>
+                {avgRating !== null ? avgRating.toFixed(1) : '—'}
+              </span>
               <span className="text-sm mb-0.5" style={{ color: 'var(--orange)' }}>★</span>
             </div>
             <div className="flex gap-0.5">
-              {'★★★★★'.split('').map((s, i) => (
+              {[1,2,3,4,5].map((s, i) => (
                 <span key={i} className="text-sm" style={{ color: 'var(--orange)' }}>{s}</span>
               ))}
             </div>
@@ -264,7 +280,7 @@ export default function Hero() {
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full" style={{ background: '#22c55e' }} />
-              <span className="text-[9px] font-bold" style={{ color: 'var(--text3)' }}>WORLD-WIDE</span>
+              <span className="text-[9px] font-bold" style={{ color: 'var(--text3)' }}>INDIA-WIDE</span>
             </div>
           </div>
         </div>
@@ -297,10 +313,13 @@ export default function Hero() {
             <div className="text-xs" style={{ color: 'var(--text3)' }}>Service Available</div>
           </div>
 
-          {/* For Project Dev */}
+          {/* Client Rating — LIVE avg from reviews */}
           <div className="text-center">
-            <div className="font-grotesk font-bold text-2xl mb-1" style={{ color: 'var(--text)' }}>#1</div>
-            <div className="text-xs" style={{ color: 'var(--text3)' }}>For Project Dev</div>
+            <div className="font-grotesk font-bold text-2xl mb-1 inline-flex items-center gap-1" style={{ color: 'var(--text)' }}>
+              {avgRating !== null ? avgRating.toFixed(1) : '—'}
+              <span style={{ color: 'var(--orange)', fontSize: '18px' }}>★</span>
+            </div>
+            <div className="text-xs" style={{ color: 'var(--text3)' }}>Client Rating</div>
           </div>
         </div>
       </div>

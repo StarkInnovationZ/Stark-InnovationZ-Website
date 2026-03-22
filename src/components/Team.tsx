@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Linkedin, Instagram, Mail, X, Briefcase, GraduationCap, MapPin } from 'lucide-react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -21,18 +22,18 @@ interface TeamMember {
 }
 
 const CARD_GRADIENTS = [
-  'linear-gradient(to top, #f97316 0%, rgba(249,115,22,0.6) 10%, transparent 100%)',
-  'linear-gradient(to top, #ec4899 0%, rgba(236,72,153,0.6) 10%, transparent 100%)',
-  'linear-gradient(to top, #8b5cf6 0%, rgba(139,92,246,0.6) 10%, transparent 100%)',
-  'linear-gradient(to top, #06b6d4 0%, rgba(6,182,212,0.6) 10%, transparent 100%)',
-  'linear-gradient(to top, #10b981 0%, rgba(16,185,129,0.6) 10%, transparent 100%)',
-  'linear-gradient(to top, #f59e0b 0%, rgba(245,158,11,0.6) 10%, transparent 100%)',
-  'linear-gradient(to top, #ef4444 0%, rgba(239,68,68,0.6) 10%, transparent 100%)',
-  'linear-gradient(to top, #6366f1 0%, rgba(99,102,241,0.6) 10%, transparent 100%)',
-  'linear-gradient(to top, #14b8a6 0%, rgba(20,184,166,0.6) 10%, transparent 100%)',
-  'linear-gradient(to top, #e11d48 0%, rgba(225,29,72,0.6)  10%, transparent 100%)',
-  'linear-gradient(to top, #7c3aed 0%, rgba(124,58,237,0.6) 10%, transparent 100%)',
-  'linear-gradient(to top, #0ea5e9 0%, rgba(14,165,233,0.6) 10%, transparent 100%)',
+  'linear-gradient(to top, #f97316 0%, rgba(249,115,22,0.6) 20%, transparent 100%)',
+  'linear-gradient(to top, #ec4899 0%, rgba(236,72,153,0.6) 20%, transparent 100%)',
+  'linear-gradient(to top, #8b5cf6 0%, rgba(139,92,246,0.6) 20%, transparent 100%)',
+  'linear-gradient(to top, #06b6d4 0%, rgba(6,182,212,0.6) 20%, transparent 100%)',
+  'linear-gradient(to top, #10b981 0%, rgba(16,185,129,0.6) 20%, transparent 100%)',
+  'linear-gradient(to top, #f59e0b 0%, rgba(245,158,11,0.6) 20%, transparent 100%)',
+  'linear-gradient(to top, #ef4444 0%, rgba(239,68,68,0.6) 20%, transparent 100%)',
+  'linear-gradient(to top, #6366f1 0%, rgba(99,102,241,0.6) 20%, transparent 100%)',
+  'linear-gradient(to top, #14b8a6 0%, rgba(20,184,166,0.6) 20%, transparent 100%)',
+  'linear-gradient(to top, #e11d48 0%, rgba(225,29,72,0.6)  20%, transparent 100%)',
+  'linear-gradient(to top, #7c3aed 0%, rgba(124,58,237,0.6) 20%, transparent 100%)',
+  'linear-gradient(to top, #0ea5e9 0%, rgba(14,165,233,0.6) 20%, transparent 100%)',
 ];
 const PLACEHOLDER_BG = [
   'linear-gradient(160deg,#fff0e6,#fed7aa)',
@@ -192,7 +193,7 @@ function ImagePanel({ member, accent }: { member: TeamMember; accent: string }) 
 function MemberPopup({ member, idx, onClose }: { member: TeamMember; idx: number; onClose: () => void }) {
   const accent = getAccent(idx);
 
-  /* close on backdrop click or Escape */
+  /* close on Escape, lock scroll */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -203,19 +204,38 @@ function MemberPopup({ member, idx, onClose }: { member: TeamMember; idx: number
     };
   }, [onClose]);
 
-  return (
+  const modal = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(15,13,10,0.65)', backdropFilter: 'blur(8px)', animation: 'backdropIn 0.25s ease' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      style={{
+        position: 'fixed',
+        top: 0, left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 99999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(15,13,10,0.75)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        animation: 'backdropIn 0.25s ease',
+        padding: '20px',
+        boxSizing: 'border-box' as const,
+      }}
     >
       <div
-        className="relative w-full max-w-3xl rounded-3xl overflow-hidden"
+        onClick={e => e.stopPropagation()}
         style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: '760px',
+          borderRadius: '24px',
+          overflow: 'hidden',
           background: 'var(--bg2)',
-          boxShadow: '0 32px 80px rgba(15,13,10,0.35)',
+          boxShadow: '0 32px 80px rgba(15,13,10,0.5)',
           animation: 'popupIn 0.35s cubic-bezier(.16,1,.3,1)',
-          maxHeight: '90vh',
+          maxHeight: '85vh',
           overflowY: 'auto',
         }}
       >
@@ -330,6 +350,8 @@ function MemberPopup({ member, idx, onClose }: { member: TeamMember; idx: number
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
 
 /* ── Main Team Component ── */
