@@ -6,11 +6,17 @@ import { Link, useLocation } from 'react-router-dom';
 const RUNNING_WORDS = [
   'InnovationZ',
   'Hardware',
+  'InnovationZ',
   'Software',
+  'InnovationZ',
   '3D Design',
+  'InnovationZ',
   '3D Printing',
+  'InnovationZ',
   'Training',
+  'InnovationZ',
   'Solutions',
+  'InnovationZ',
   'Excellence',
 ];
 
