@@ -77,7 +77,7 @@ export default function Reviews() {
               </h2>
             </div>
             <Link to="/reviews"
-              className="hidden sm:inline-flex items-center gap-2 font-bold text-sm flex-shrink-0 transition-all duration-200 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 font-bold text-sm flex-shrink-0 transition-all duration-200 hover:-translate-y-0.5"
               style={{ padding:'10px 20px', borderRadius:10, background:'var(--orange3)', color:'var(--orange)', border:'1px solid var(--orange4)' }}
               onMouseEnter={e=>{(e.currentTarget as HTMLAnchorElement).style.background='var(--orange)';(e.currentTarget as HTMLAnchorElement).style.color='#fff';}}
               onMouseLeave={e=>{(e.currentTarget as HTMLAnchorElement).style.background='var(--orange3)';(e.currentTarget as HTMLAnchorElement).style.color='var(--orange)';}}>
