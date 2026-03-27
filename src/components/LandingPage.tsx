@@ -205,7 +205,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
         {/* skip hint */}
         <p className="mt-6 text-[9px] tracking-[2px]"
           style={{ color: 'rgba(255,255,255,0.15)', animation: 'ldUp 0.9s 0.5s cubic-bezier(.16,1,.3,1) both' }}>
-          CLICK ANYWHERE OR PRESS ENTER TO SKIP
+          CLICK ANYWHERE TO SKIP
         </p>
       </div>
 
